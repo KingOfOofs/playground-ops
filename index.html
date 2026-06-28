@@ -1,0 +1,1364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <meta name="theme-color" content="#0a0f1a">
+  <title>Playground Ops</title>
+  <link rel="manifest" href="manifest.json">
+  <style>
+    :root {
+      --bg: #0a0f1a;
+      --surface: #111827;
+      --surface2: #1c2535;
+      --border: #1f3050;
+      --green: #22c55e;
+      --green-dim: #16a34a;
+      --green-glow: rgba(34,197,94,0.15);
+      --amber: #f59e0b;
+      --amber-dim: #d97706;
+      --red: #ef4444;
+      --text: #e2e8f0;
+      --text-muted: #64748b;
+      --text-dim: #94a3b8;
+      --mono: 'Courier New', Courier, monospace;
+      --radius: 8px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--mono);
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      overflow-x: hidden;
+    }
+
+    /* ── SCREENS ── */
+    .screen {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      max-width: 480px;
+      min-height: 100dvh;
+      padding: 24px 20px 40px;
+      animation: fadeIn 0.3s ease;
+    }
+    .screen.active { display: flex; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+    /* ── HEADER / LOGO ── */
+    .hq-logo {
+      text-align: center;
+      margin-bottom: 32px;
+      margin-top: 24px;
+    }
+    .hq-logo .badge {
+      display: inline-block;
+      border: 2px solid var(--green);
+      border-radius: 50%;
+      width: 80px; height: 80px;
+      line-height: 76px;
+      font-size: 36px;
+      margin-bottom: 12px;
+      box-shadow: 0 0 20px var(--green-glow);
+    }
+    .hq-logo h1 {
+      font-size: 1.6rem;
+      letter-spacing: 0.15em;
+      color: var(--green);
+      text-transform: uppercase;
+    }
+    .hq-logo .tagline {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      margin-top: 4px;
+    }
+
+    /* ── TERMINAL BLOCK ── */
+    .terminal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      width: 100%;
+      font-size: 0.8rem;
+      line-height: 1.7;
+    }
+    .terminal .label {
+      color: var(--green);
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 6px;
+    }
+    .terminal p { color: var(--text-dim); }
+    .terminal .highlight { color: var(--text); }
+    .terminal .green { color: var(--green); }
+    .terminal .amber { color: var(--amber); }
+
+    /* ── BUTTONS ── */
+    .btn {
+      display: block;
+      width: 100%;
+      padding: 14px 20px;
+      border: none;
+      border-radius: var(--radius);
+      font-family: var(--mono);
+      font-size: 0.85rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.15s;
+      font-weight: bold;
+    }
+    .btn-primary {
+      background: var(--green);
+      color: #0a0f1a;
+    }
+    .btn-primary:hover { background: var(--green-dim); box-shadow: 0 0 12px var(--green-glow); }
+    .btn-secondary {
+      background: transparent;
+      color: var(--text-dim);
+      border: 1px solid var(--border);
+    }
+    .btn-secondary:hover { border-color: var(--text-muted); color: var(--text); }
+    .btn-danger {
+      background: transparent;
+      color: var(--red);
+      border: 1px solid var(--red);
+    }
+    .btn-amber {
+      background: var(--amber);
+      color: #0a0f1a;
+    }
+    .btn-amber:hover { background: var(--amber-dim); }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* ── STACK ── */
+    .stack { display: flex; flex-direction: column; gap: 12px; width: 100%; }
+
+    /* ── STATUS INDICATOR ── */
+    .status-dot {
+      display: inline-block;
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      margin-right: 6px;
+      vertical-align: middle;
+    }
+    .dot-green { background: var(--green); box-shadow: 0 0 6px var(--green); animation: pulse 2s infinite; }
+    .dot-amber { background: var(--amber); animation: pulse 1s infinite; }
+    .dot-red { background: var(--red); }
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+    /* ── PLAYGROUND CARD ── */
+    .playground-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px;
+      cursor: pointer;
+      transition: all 0.15s;
+      width: 100%;
+    }
+    .playground-card:hover, .playground-card.selected {
+      border-color: var(--green);
+      background: var(--surface2);
+      box-shadow: 0 0 12px var(--green-glow);
+    }
+    .playground-card .card-name {
+      font-size: 0.95rem;
+      font-weight: bold;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+    .playground-card .card-meta {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      letter-spacing: 0.1em;
+    }
+
+    /* ── PLAYGROUND VISUAL ── */
+    .visual-container {
+      width: 100%;
+      border-radius: var(--radius);
+      overflow: hidden;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      position: relative;
+    }
+    .visual-placeholder {
+      width: 100%;
+      aspect-ratio: 16/9;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+      gap: 8px;
+    }
+    .visual-placeholder .icon { font-size: 2.5rem; }
+    .visual-img {
+      width: 100%;
+      aspect-ratio: 16/9;
+      object-fit: cover;
+      display: block;
+    }
+    .visual-img.hidden { display: none; }
+    .visual-label {
+      position: absolute;
+      top: 8px; left: 8px;
+      background: rgba(0,0,0,0.75);
+      color: var(--green);
+      font-size: 0.6rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      padding: 3px 7px;
+      border-radius: 3px;
+      border: 1px solid var(--green);
+    }
+
+    /* ── PHOTO STRIP ── */
+    .photo-strip {
+      display: flex;
+      gap: 8px;
+      width: 100%;
+      overflow-x: auto;
+      padding-bottom: 4px;
+    }
+    .photo-strip img {
+      width: 120px;
+      height: 80px;
+      object-fit: cover;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .photo-strip .photo-placeholder {
+      width: 120px;
+      height: 80px;
+      border-radius: 4px;
+      border: 1px dashed var(--border);
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.6rem;
+      color: var(--text-muted);
+      letter-spacing: 0.08em;
+    }
+
+    /* ── OBJECTIVES LIST ── */
+    .objectives-list {
+      list-style: none;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .objective-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .objective-item.completed {
+      border-color: var(--green);
+      background: rgba(34,197,94,0.05);
+    }
+    .objective-item.completed .obj-text { text-decoration: line-through; color: var(--text-muted); }
+    .obj-num {
+      font-size: 0.7rem;
+      color: var(--green);
+      font-weight: bold;
+      min-width: 20px;
+      padding-top: 1px;
+    }
+    .obj-body { flex: 1; }
+    .obj-label {
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      margin-bottom: 3px;
+    }
+    .obj-text {
+      font-size: 0.85rem;
+      color: var(--text);
+      line-height: 1.4;
+    }
+    .obj-check {
+      width: 20px; height: 20px;
+      border: 2px solid var(--border);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      color: transparent;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+    .objective-item.completed .obj-check {
+      background: var(--green);
+      border-color: var(--green);
+      color: #0a0f1a;
+    }
+
+    /* ── SECTION LABEL ── */
+    .section-label {
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      width: 100%;
+      margin-bottom: -4px;
+    }
+
+    /* ── MISSION COMPLETE ── */
+    .complete-badge {
+      text-align: center;
+      padding: 32px 0 24px;
+    }
+    .complete-badge .icon {
+      font-size: 4rem;
+      display: block;
+      margin-bottom: 12px;
+      animation: stamp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    @keyframes stamp {
+      from { transform: scale(2); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    .complete-badge h2 {
+      font-size: 1.3rem;
+      color: var(--green);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+    }
+    .complete-badge .mission-name {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+      letter-spacing: 0.1em;
+    }
+    .debrief-msg {
+      background: var(--surface);
+      border-left: 3px solid var(--green);
+      padding: 14px 16px;
+      border-radius: 0 var(--radius) var(--radius) 0;
+      font-size: 0.82rem;
+      color: var(--text-dim);
+      line-height: 1.6;
+      width: 100%;
+    }
+    .debrief-msg strong { color: var(--text); }
+
+    /* ── PROGRESS BAR ── */
+    .progress-bar-wrap {
+      width: 100%;
+      height: 4px;
+      background: var(--surface2);
+      border-radius: 2px;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: var(--green);
+      border-radius: 2px;
+      transition: width 0.4s ease;
+      box-shadow: 0 0 6px var(--green);
+    }
+
+    /* ── INPUT ── */
+    .input-field {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px 14px;
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 0.85rem;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .input-field:focus { border-color: var(--green); }
+    .input-field::placeholder { color: var(--text-muted); }
+
+    /* ── DIVIDER ── */
+    .divider {
+      width: 100%;
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 4px 0;
+    }
+
+    /* ── PRIVACY TAG ── */
+    .privacy-notice {
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      text-align: center;
+      letter-spacing: 0.05em;
+      line-height: 1.5;
+    }
+    .privacy-notice .green { color: var(--green); }
+
+    /* ── TOP BAR ── */
+    .top-bar {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .top-bar .back-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+      padding: 4px 0;
+    }
+    .top-bar .back-btn:hover { color: var(--text); }
+    .top-bar .screen-title {
+      flex: 1;
+      font-size: 0.7rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      text-align: right;
+    }
+
+    /* ── COUNTDOWN OVERLAY ── */
+    #countdown-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: var(--bg);
+      z-index: 1000;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+    }
+    #countdown-overlay.active { display: flex; }
+    #countdown-number {
+      font-size: 8rem;
+      font-weight: bold;
+      color: var(--green);
+      text-shadow: 0 0 40px var(--green);
+      animation: countPop 0.8s ease forwards;
+      line-height: 1;
+    }
+    #countdown-number.go {
+      font-size: 5rem;
+      color: var(--amber);
+      text-shadow: 0 0 40px var(--amber);
+    }
+    @keyframes countPop {
+      0%   { transform: scale(1.4); opacity: 0; }
+      20%  { transform: scale(1);   opacity: 1; }
+      80%  { transform: scale(1);   opacity: 1; }
+      100% { transform: scale(0.8); opacity: 0; }
+    }
+    #countdown-label {
+      font-size: 0.7rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    /* ── SCANLINE EFFECT ── */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(
+        to bottom,
+        transparent 0px,
+        transparent 3px,
+        rgba(0,0,0,0.03) 3px,
+        rgba(0,0,0,0.03) 4px
+      );
+      pointer-events: none;
+      z-index: 9999;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════
+     SCREEN 1: HQ / HOME
+══════════════════════════════════════ -->
+<section class="screen active" id="screen-home">
+  <div class="hq-logo">
+    <div class="badge">🕵️</div>
+    <h1>Playground Ops</h1>
+    <div class="tagline">Field Operations Division</div>
+  </div>
+
+  <div class="stack">
+    <div class="terminal">
+      <div class="label">// Incoming Transmission</div>
+      <p>Agent, your mission briefing is ready.<br>
+      Approach your <span class="green">assigned base</span>, then activate this device to receive your objectives.</p>
+      <br>
+      <p class="highlight">⚠ This transmission will not be logged. Coordinates are erased after briefing.</p>
+    </div>
+
+    <div class="section-label">// Agent Callsign (optional)</div>
+    <input class="input-field" id="agent-name-input" type="text" placeholder="Enter agent name..." maxlength="24" autocomplete="off">
+
+    <button class="btn btn-primary" onclick="startLocationDetect()">▶ Begin Briefing</button>
+    <button class="btn btn-secondary" onclick="showManualSelect()">↓ Select Base Manually</button>
+
+    <hr class="divider">
+
+    <p class="privacy-notice">
+      <span class="green">Zero data collection.</span><br>
+      Location is detected on this device only — never transmitted, never stored.<br>
+      No accounts. No tracking. Mission accepted.
+    </p>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════
+     SCREEN 2: LOCATING
+══════════════════════════════════════ -->
+<section class="screen" id="screen-locating">
+  <div class="top-bar">
+    <button class="back-btn" onclick="goHome()">← Abort</button>
+    <span class="screen-title">Triangulating</span>
+  </div>
+
+  <div class="stack" style="margin-top: 40px; align-items: center;">
+    <div style="text-align:center; padding: 24px 0;">
+      <div style="font-size: 3rem; margin-bottom: 16px;">📡</div>
+      <div style="font-size: 0.8rem; color: var(--text-muted); letter-spacing: 0.2em; text-transform: uppercase;">
+        <span class="status-dot dot-amber"></span> Scanning for nearby bases...
+      </div>
+    </div>
+
+    <div class="terminal">
+      <div class="label">// Status</div>
+      <p id="locate-status">Requesting position data from device sensors...</p>
+    </div>
+
+    <p class="privacy-notice" style="margin-top: 8px;">
+      Your location is processed on-device only.<br>
+      This transmission is not logged.
+    </p>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════
+     SCREEN 3: SELECT BASE (manual or no-match)
+══════════════════════════════════════ -->
+<section class="screen" id="screen-select">
+  <div class="top-bar">
+    <button class="back-btn" onclick="goHome()">← HQ</button>
+    <span class="screen-title">Select Base</span>
+  </div>
+
+  <div class="stack">
+    <div class="terminal" id="select-header-msg">
+      <div class="label">// No nearby base detected</div>
+      <p>HQ couldn't confirm your position. Select your base from the catalog below, Agent.</p>
+    </div>
+
+    <div class="section-label">// Known Bases</div>
+    <div class="stack" id="playground-list">
+      <!-- injected by JS -->
+    </div>
+
+    <button class="btn btn-primary" id="confirm-select-btn" disabled onclick="confirmPlaygroundSelect()">Confirm Base →</button>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════
+     SCREEN 4: MISSION SELECT
+══════════════════════════════════════ -->
+<section class="screen" id="screen-mission-select">
+  <div class="top-bar">
+    <button class="back-btn" onclick="showManualSelect()">← Change Base</button>
+    <span class="screen-title">Select Mission</span>
+  </div>
+
+  <div class="stack">
+    <div class="terminal">
+      <div class="label">// Base Confirmed</div>
+      <p><span class="green" id="mission-select-playground-name">–</span></p>
+      <p style="margin-top:6px; font-size:0.75rem;"><span class="status-dot dot-green"></span>Choose a mission below, Agent.</p>
+    </div>
+
+    <div class="section-label">// Available Missions</div>
+    <div class="stack" id="mission-list">
+      <!-- injected by JS -->
+    </div>
+
+    <button class="btn btn-primary" id="confirm-mission-btn" disabled onclick="confirmMissionSelect()">Accept Mission →</button>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════
+     SCREEN 5: BRIEFING
+══════════════════════════════════════ -->
+<section class="screen" id="screen-briefing">
+  <div class="top-bar">
+    <button class="back-btn" onclick="showMissionSelect()">← Missions</button>
+    <span class="screen-title">Mission Briefing</span>
+  </div>
+
+  <div class="stack">
+    <!-- Playground confirmed -->
+    <div class="terminal">
+      <div class="label">// Base Confirmed</div>
+      <p><span class="green" id="brief-playground-name">–</span></p>
+      <p style="margin-top:6px; font-size:0.75rem;"><span class="status-dot dot-green"></span>Location verified. Coordinates erased.</p>
+    </div>
+
+    <!-- Visual -->
+    <div class="section-label">// Visual Confirmation</div>
+    <div class="visual-container">
+      <img class="visual-img hidden" id="brief-map-img" alt="Aerial view" onerror="this.classList.add('hidden'); document.getElementById('brief-map-placeholder').style.display='flex'">
+      <div class="visual-placeholder" id="brief-map-placeholder">
+        <span class="icon">🗺️</span>
+        <span>Map snapshot — add images/[base]/map.jpg</span>
+      </div>
+      <div class="visual-label">Aerial</div>
+    </div>
+
+    <div class="photo-strip" id="brief-photos">
+      <!-- injected by JS -->
+    </div>
+
+    <!-- Mission -->
+    <div class="section-label" style="margin-top:8px;">// Assigned Mission</div>
+    <div class="terminal">
+      <div class="label" id="brief-mission-label">Operation –</div>
+      <p id="brief-mission-desc" style="color: var(--text);">–</p>
+    </div>
+
+    <!-- Agent name (optional) -->
+    <!-- Objectives preview -->
+    <div class="section-label">// Objectives</div>
+    <ul class="objectives-list" id="brief-objectives">
+      <!-- injected by JS -->
+    </ul>
+
+    <hr class="divider">
+
+    <div class="terminal" style="border-color: var(--amber); background: rgba(245,158,11,0.05);">
+      <div class="label" style="color: var(--amber);">// Field Support Notice</div>
+      <p style="color: var(--amber);">Review objectives with your agent, then put the phone away. The mission begins when the screen goes dark.</p>
+    </div>
+
+    <button class="btn btn-amber" onclick="startMission()">▶ Begin Mission — Phone Away</button>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════
+     SCREEN 5: DEBRIEF (checklist)
+══════════════════════════════════════ -->
+<section class="screen" id="screen-debrief">
+  <div class="top-bar">
+    <button class="back-btn" onclick="backToBriefing()">← Briefing</button>
+    <span class="screen-title">Debrief</span>
+  </div>
+
+  <div class="stack">
+    <div class="terminal">
+      <div class="label">// Mission Debrief</div>
+      <p id="debrief-header-text">Agent, check off each objective as completed.</p>
+    </div>
+
+    <!-- Progress -->
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="debrief-progress" style="width: 0%"></div>
+    </div>
+
+    <div style="font-size: 0.7rem; color: var(--text-muted); text-align: right; width: 100%;">
+      <span id="debrief-count">0</span> / <span id="debrief-total">0</span> objectives cleared
+    </div>
+
+    <ul class="objectives-list" id="debrief-objectives">
+      <!-- injected by JS -->
+    </ul>
+
+    <button class="btn btn-primary" id="complete-btn" disabled onclick="showComplete()">Submit Report →</button>
+    <button class="btn btn-secondary" onclick="restartMission()">↺ Restart Mission</button>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════
+     SCREEN 6: MISSION COMPLETE
+══════════════════════════════════════ -->
+<section class="screen" id="screen-complete">
+  <div class="stack" style="margin-top: 24px;">
+    <div class="complete-badge">
+      <span class="icon">🏅</span>
+      <h2>Mission Complete</h2>
+      <div class="mission-name" id="complete-mission-name">Operation –</div>
+    </div>
+
+    <div class="debrief-msg" id="complete-debrief-msg">
+      <!--injected-->
+    </div>
+
+    <div class="terminal" style="font-size: 0.75rem;">
+      <div class="label">// Transmission Log</div>
+      <p style="color: var(--text-muted);">
+        <span class="green">✓</span> Location data: purged<br>
+        <span class="green">✓</span> Mission record: not stored<br>
+        <span class="green">✓</span> Agent identity: classified<br>
+        <span class="amber">★</span> Cover status: intact
+      </p>
+    </div>
+
+    <hr class="divider">
+
+    <button class="btn btn-primary" onclick="newMission()">▶ New Mission</button>
+    <button class="btn btn-secondary" onclick="goHome()">↩ Return to HQ</button>
+  </div>
+</section>
+
+
+<script>
+  // ══════════════════════════════════════
+  // CATALOG (inline — no server needed)
+  // ══════════════════════════════════════
+  const STORAGE_KEY = 'playground-ops-completions';
+  const NAME_KEY = 'playground-ops-agent-name';
+
+  const CATALOG = {
+    "schemaVersion": 1,
+    "playgrounds": [
+      {
+        "id": "base-alpha",
+        "name": "Maple Grove Elementary Middle Playground",
+        "location": { "lat": 49.229729, "lng": -123.150557, "matchRadiusMeters": 100 },
+        "visual": {
+          "mapSnapshot": "images/base-alpha/map.png",
+          "photos": ["images/base-alpha/photo-1.jpg", "images/base-alpha/photo-2.jpg"],
+          "model3d": null
+        },
+        "equipment": [
+          { "id": "rockwall-1", "name": "Rock wall", "type": "climbing_wall" },
+          { "id": "climbingnet-1", "name": "Climbing net", "type": "climbing_net" },
+          { "id": "monkeybars-1", "name": "Monkey bars", "type": "monkey_bars" },
+          { "id": "redclimber-1", "name": "Red climbing structure", "type": "climbing_structure" }
+        ],
+        "missions": [
+          {
+            "id": "mission-alpha-001",
+            "title": "Operation Sundial",
+            "source": "official",
+            "status": "approved",
+            "startPoint": "Inside the red climbing structure",
+            "endPoint": "Inside the red climbing structure",
+            "objectives": [
+              { "equipmentId": "rockwall-1", "instruction": "Climb up the rock wall." },
+              { "equipmentId": "climbingnet-1", "instruction": "Climb across the net." },
+              { "equipmentId": "monkeybars-1", "instruction": "Cross the monkey bars without touching the ground." },
+              { "equipmentId": "redclimber-1", "instruction": "Climb to the top of the red structure." }
+            ]
+          },
+          {
+            "id": "mission-alpha-002",
+            "title": "Operation Ironclad",
+            "source": "official",
+            "status": "approved",
+            "startPoint": "Inside the red climbing structure",
+            "endPoint": "Inside the red climbing structure",
+            "objectives": [
+              { "equipmentId": "redclimber-1", "instruction": "Climb the red structure and go all the way around on top." },
+              { "equipmentId": "monkeybars-1", "instruction": "Use the monkey bars to get to the climbing net." },
+              { "equipmentId": "climbingnet-1", "instruction": "Cross the climbing net." },
+              { "equipmentId": "rockwall-1", "instruction": "Go down the rock wall." }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "base-bravo",
+        "name": "Maple Grove Elementary Primary Playground",
+        "location": { "lat": 49.230479, "lng": -123.150038, "matchRadiusMeters": 100 },
+        "visual": {
+          "mapSnapshot": "images/base-bravo/map.jpg",
+          "photos": ["images/base-bravo/photo-1.jpg", "images/base-bravo/photo-2.jpg"],
+          "model3d": null
+        },
+        "equipment": [
+          { "id": "slide-2", "name": "Twisty slide", "type": "slide" },
+          { "id": "climbingdome-1", "name": "Climbing dome", "type": "climbing_dome" },
+          { "id": "seesaw-1", "name": "Seesaw", "type": "seesaw" },
+          { "id": "tunnel-1", "name": "Crawl tunnel", "type": "tunnel" }
+        ],
+        "missions": [
+          {
+            "id": "mission-bravo-001",
+            "title": "Operation Tanglewood",
+            "source": "official",
+            "status": "approved",
+            "objectives": [
+              { "equipmentId": "tunnel-1", "instruction": "Crawl through enemy lines undetected." },
+              { "equipmentId": "climbingdome-1", "instruction": "Climb to the top to scout the area." },
+              { "equipmentId": "seesaw-1", "instruction": "Signal your team with three balanced presses." },
+              { "equipmentId": "slide-2", "instruction": "Make your escape." }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "base-charlie",
+        "name": "Maple Grove Elementary Red Playground",
+        "location": { "lat": 49.229260, "lng": -123.149809, "matchRadiusMeters": 100 },
+        "visual": {
+          "mapSnapshot": "images/base-charlie/map.jpg",
+          "photos": ["images/base-charlie/photo-1.jpg", "images/base-charlie/photo-2.jpg"],
+          "model3d": null
+        },
+        "equipment": [
+          { "id": "slide-3", "name": "Slide", "type": "slide" },
+          { "id": "monkeybars-2", "name": "Monkey bars", "type": "monkey_bars" },
+          { "id": "springriders-1", "name": "Spring riders", "type": "spring_rider" },
+          { "id": "sandbox-1", "name": "Sandbox", "type": "sandbox" }
+        ],
+        "missions": [
+          {
+            "id": "mission-charlie-001",
+            "title": "Operation Driftwood",
+            "source": "official",
+            "status": "approved",
+            "objectives": [
+              { "equipmentId": "sandbox-1", "instruction": "Dig up the buried intel." },
+              { "equipmentId": "springriders-1", "instruction": "Ride to send a coded signal." },
+              { "equipmentId": "monkeybars-2", "instruction": "Cross the bars to reach the rendezvous." },
+              { "equipmentId": "slide-3", "instruction": "Exit the area before backup arrives." }
+            ]
+          }
+        ]
+      }
+    ]
+  };
+
+  // ══════════════════════════════════════
+  // STATE
+  // ══════════════════════════════════════
+  let state = {
+    selectedPlayground: null,
+    selectedMission: null,
+    agentName: null,
+    completed: new Set(),
+    missionStartTime: null,
+  };
+
+  // ══════════════════════════════════════
+  // NAVIGATION
+  // ══════════════════════════════════════
+  function showScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    window.scrollTo(0, 0);
+  }
+
+  function goHome() {
+    state = { selectedPlayground: null, selectedMission: null, agentName: null, completed: new Set() };
+    showScreen('screen-home');
+    restoreSavedName();
+  }
+
+  function restoreSavedName() {
+    const saved = localStorage.getItem(NAME_KEY);
+    const input = document.getElementById('agent-name-input');
+    if (saved) input.value = saved;
+  }
+
+  // Restore name on initial load
+  restoreSavedName();
+
+  function backToBriefing() {
+    showScreen('screen-briefing');
+  }
+
+  // ══════════════════════════════════════
+  // GEOLOCATION + MATCHING
+  // ══════════════════════════════════════
+  function haversineMeters(lat1, lng1, lat2, lng2) {
+    const R = 6371000;
+    const toRad = d => d * Math.PI / 180;
+    const dLat = toRad(lat2 - lat1);
+    const dLng = toRad(lng2 - lng1);
+    const a = Math.sin(dLat/2)**2 +
+              Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng/2)**2;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  }
+
+  function findNearestPlayground(lat, lng) {
+    let best = null, bestDist = Infinity;
+    for (const pg of CATALOG.playgrounds) {
+      const d = haversineMeters(lat, lng, pg.location.lat, pg.location.lng);
+      if (d < bestDist) { bestDist = d; best = pg; }
+    }
+    if (best && bestDist <= best.location.matchRadiusMeters) return best;
+    return null;
+  }
+
+  function startLocationDetect() {
+    showScreen('screen-locating');
+    if (!navigator.geolocation) {
+      document.getElementById('locate-status').textContent = 'Geolocation not supported on this device.';
+      setTimeout(showManualSelect, 1500);
+      return;
+    }
+    document.getElementById('locate-status').textContent = 'Requesting position data from device sensors...';
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        const { latitude, longitude } = pos.coords;
+        // Coordinates used once, then discarded — never stored
+        const match = findNearestPlayground(latitude, longitude);
+        if (match) {
+          selectPlayground(match);
+          showMissionSelect();
+        } else {
+          document.getElementById('locate-status').textContent = 'No nearby base detected within range.';
+          setTimeout(() => {
+            document.getElementById('select-header-msg').innerHTML = `
+              <div class="label">// No nearby base detected</div>
+              <p>HQ couldn't confirm your position. Select your base from the catalog below, Agent.</p>`;
+            populatePlaygroundList();
+            showScreen('screen-select');
+          }, 800);
+        }
+      },
+      err => {
+        const msgs = {
+          1: 'Location access denied. Manual selection required.',
+          2: 'Position unavailable. Check your signal.',
+          3: 'Location request timed out.',
+        };
+        document.getElementById('locate-status').textContent = msgs[err.code] || 'Location error.';
+        setTimeout(() => {
+          document.getElementById('select-header-msg').innerHTML = `
+            <div class="label">// Location access denied</div>
+            <p>Select your base from the catalog below to continue your briefing.</p>`;
+          populatePlaygroundList();
+          showScreen('screen-select');
+        }, 1200);
+      },
+      { timeout: 10000, maximumAge: 0, enableHighAccuracy: true }
+    );
+  }
+
+  // ══════════════════════════════════════
+  // MANUAL SELECT
+  // ══════════════════════════════════════
+  function showManualSelect() {
+    document.getElementById('select-header-msg').innerHTML = `
+      <div class="label">// Manual Selection</div>
+      <p>Select your base from the catalog below, Agent.</p>`;
+    populatePlaygroundList();
+    showScreen('screen-select');
+  }
+
+  function populatePlaygroundList() {
+    const list = document.getElementById('playground-list');
+    list.innerHTML = '';
+    CATALOG.playgrounds.forEach(pg => {
+      const missionCount = pg.missions.filter(m => m.status === 'approved').length;
+      const card = document.createElement('div');
+      card.className = 'playground-card';
+      card.dataset.id = pg.id;
+      card.innerHTML = `
+        <div class="card-name">${pg.name}</div>
+        <div class="card-meta">${pg.equipment.length} equipment items &nbsp;·&nbsp; ${missionCount} mission${missionCount !== 1 ? 's' : ''}</div>
+      `;
+      card.addEventListener('click', () => {
+        document.querySelectorAll('.playground-card').forEach(c => c.classList.remove('selected'));
+        card.classList.add('selected');
+        selectPlayground(pg);
+        document.getElementById('confirm-select-btn').disabled = false;
+      });
+      list.appendChild(card);
+    });
+  }
+
+  function confirmPlaygroundSelect() {
+    if (!state.selectedPlayground) return;
+    showMissionSelect();
+  }
+
+  // ══════════════════════════════════════
+  // PLAYGROUND + MISSION SELECTION
+  // ══════════════════════════════════════
+  function selectPlayground(pg) {
+    state.selectedPlayground = pg;
+    state.selectedMission = null;
+    state.completed = new Set();
+  }
+
+  function showMissionSelect() {
+    const pg = state.selectedPlayground;
+    document.getElementById('mission-select-playground-name').textContent = pg.name;
+
+    const list = document.getElementById('mission-list');
+    list.innerHTML = '';
+    const missions = pg.missions.filter(m => m.status === 'approved');
+    missions.forEach(mission => {
+      const card = document.createElement('div');
+      card.className = 'playground-card';
+      card.dataset.id = mission.id;
+      const count = getMissionCompletionCount(mission.id);
+      const best = getMissionBestTime(mission.id);
+      const completedTag = count > 0
+        ? `&nbsp;·&nbsp; <span style="color:var(--green)">✓ ${count === 1 ? 'once' : count + ' times'}</span>`
+        : '';
+      const bestTag = best !== null
+        ? `&nbsp;·&nbsp; <span style="color:var(--amber)">⚡ ${formatDuration(best)}</span>`
+        : '';
+      card.innerHTML = `
+        <div class="card-name">${mission.title}</div>
+        <div class="card-meta">${mission.objectives.length} objectives &nbsp;·&nbsp; ${mission.source}${completedTag}${bestTag}</div>
+      `;
+      card.addEventListener('click', () => {
+        document.querySelectorAll('#mission-list .playground-card').forEach(c => c.classList.remove('selected'));
+        card.classList.add('selected');
+        state.selectedMission = mission;
+        document.getElementById('confirm-mission-btn').disabled = false;
+      });
+      list.appendChild(card);
+    });
+
+    // Auto-select if only one mission
+    if (missions.length === 1) {
+      list.firstChild.classList.add('selected');
+      state.selectedMission = missions[0];
+      document.getElementById('confirm-mission-btn').disabled = false;
+    }
+
+    showScreen('screen-mission-select');
+  }
+
+  function confirmMissionSelect() {
+    if (!state.selectedMission) return;
+    renderBriefing();
+    showScreen('screen-briefing');
+  }
+
+  function loadImageWithFallback(img, src, onFail) {
+    const alt = src.match(/\.png$/i)
+      ? src.replace(/\.png$/i, '.jpg')
+      : src.replace(/\.jpe?g$/i, '.png');
+    img.src = src;
+    img.onerror = () => {
+      img.onerror = () => onFail();
+      img.src = alt;
+    };
+  }
+
+  function getEquipmentName(pg, equipmentId) {
+    const eq = pg.equipment.find(e => e.id === equipmentId);
+    return eq ? eq.name : equipmentId;
+  }
+
+  // ══════════════════════════════════════
+  // BRIEFING SCREEN
+  // ══════════════════════════════════════
+  function renderBriefing() {
+    const pg = state.selectedPlayground;
+    const mission = state.selectedMission;
+
+    document.getElementById('brief-playground-name').textContent = pg.name;
+
+    // Map snapshot
+    const mapImg = document.getElementById('brief-map-img');
+    const mapPH = document.getElementById('brief-map-placeholder');
+    mapImg.classList.remove('hidden');
+    mapPH.style.display = 'none';
+    loadImageWithFallback(mapImg, pg.visual.mapSnapshot, () => {
+      mapImg.classList.add('hidden');
+      mapPH.style.display = 'flex';
+    });
+
+    // Photos
+    const strip = document.getElementById('brief-photos');
+    strip.innerHTML = '';
+    pg.visual.photos.forEach(src => {
+      const img = document.createElement('img');
+      img.alt = 'Field photo';
+      strip.appendChild(img);
+      loadImageWithFallback(img, src, () => {
+        const ph = document.createElement('div');
+        ph.className = 'photo-placeholder';
+        ph.textContent = 'Photo';
+        img.replaceWith(ph);
+      });
+    });
+
+    // Mission
+    document.getElementById('brief-mission-label').textContent = `// ${mission ? mission.title : '—'}`;
+    document.getElementById('brief-mission-desc').textContent = mission
+      ? `Agent, you have been assigned ${mission.title}. Memorize your objectives before the phone goes away.`
+      : 'No mission assigned for this base.';
+
+    // Objectives (read-only preview in briefing)
+    const objList = document.getElementById('brief-objectives');
+    objList.innerHTML = '';
+    if (mission) {
+      if (mission.startPoint) objList.appendChild(makeStartEndRow('Start', mission.startPoint));
+      mission.objectives.forEach((obj, i) => {
+        const eqName = getEquipmentName(pg, obj.equipmentId);
+        const li = document.createElement('li');
+        li.className = 'objective-item';
+        li.innerHTML = `
+          <span class="obj-num">${i + 1}.</span>
+          <div class="obj-body">
+            <div class="obj-label">${eqName}</div>
+            <div class="obj-text">${obj.instruction}</div>
+          </div>
+        `;
+        objList.appendChild(li);
+      });
+      if (mission.endPoint) objList.appendChild(makeStartEndRow('Finish', mission.endPoint));
+    }
+  }
+
+  function makeStartEndRow(label, point) {
+    const li = document.createElement('li');
+    li.className = 'objective-item';
+    li.style.borderColor = 'var(--amber)';
+    li.innerHTML = `
+      <span class="obj-num" style="color:var(--amber)">${label === 'Start' ? '▶' : '⏹'}</span>
+      <div class="obj-body">
+        <div class="obj-label" style="color:var(--amber)">${label}</div>
+        <div class="obj-text">${point}</div>
+      </div>
+    `;
+    return li;
+  }
+
+  // ══════════════════════════════════════
+  // START MISSION → DEBRIEF
+  // ══════════════════════════════════════
+  function startMission() {
+    const name = document.getElementById('agent-name-input').value.trim();
+    if (name) localStorage.setItem(NAME_KEY, name);
+    else localStorage.removeItem(NAME_KEY);
+    state.agentName = name || null;
+    state.completed = new Set();
+    state.missionStartTime = null;
+    renderDebrief();
+    runCountdown(() => {
+      state.missionStartTime = Date.now();
+      showScreen('screen-debrief');
+    });
+  }
+
+  function runCountdown(onComplete) {
+    const overlay = document.getElementById('countdown-overlay');
+    const labelEl = document.getElementById('countdown-label');
+    const steps = ['3', '2', '1', 'GO'];
+    let i = 0;
+
+    function showStep() {
+      const val = steps[i];
+
+      // Replace the element entirely so the CSS animation restarts fresh each step
+      const old = document.getElementById('countdown-number');
+      const numEl = document.createElement('div');
+      numEl.id = 'countdown-number';
+      numEl.className = val === 'GO' ? 'go' : '';
+      numEl.textContent = val;
+      old.replaceWith(numEl);
+
+      labelEl.textContent = val === 'GO' ? 'Mission is live' : 'Get ready, Agent';
+
+      i++;
+      if (i < steps.length) {
+        setTimeout(showStep, 900);
+      } else {
+        setTimeout(() => {
+          overlay.classList.remove('active');
+          onComplete();
+        }, 900);
+      }
+    }
+
+    overlay.classList.add('active');
+    showStep();
+  }
+
+  function renderDebrief() {
+    const pg = state.selectedPlayground;
+    const mission = state.selectedMission;
+    const agentName = state.agentName;
+
+    const header = document.getElementById('debrief-header-text');
+    header.textContent = agentName
+      ? `Agent ${agentName}, debrief time. Check off what you completed.`
+      : 'Agent, debrief time. Check off what you completed.';
+
+    document.getElementById('debrief-total').textContent = mission.objectives.length;
+
+    const objList = document.getElementById('debrief-objectives');
+    objList.innerHTML = '';
+    if (mission.startPoint) objList.appendChild(makeStartEndRow('Start', mission.startPoint));
+    mission.objectives.forEach((obj, i) => {
+      const eqName = getEquipmentName(pg, obj.equipmentId);
+      const li = document.createElement('li');
+      li.className = 'objective-item';
+      li.dataset.index = i;
+      li.innerHTML = `
+        <span class="obj-num">${i + 1}.</span>
+        <div class="obj-body">
+          <div class="obj-label">${eqName}</div>
+          <div class="obj-text">${obj.instruction}</div>
+        </div>
+        <div class="obj-check">✓</div>
+      `;
+      li.addEventListener('click', () => toggleObjective(i, li));
+      objList.appendChild(li);
+    });
+    if (mission.endPoint) objList.appendChild(makeStartEndRow('Finish', mission.endPoint));
+
+    updateDebriefProgress();
+  }
+
+  function toggleObjective(index, li) {
+    if (state.completed.has(index)) {
+      state.completed.delete(index);
+      li.classList.remove('completed');
+    } else {
+      state.completed.add(index);
+      li.classList.add('completed');
+    }
+    updateDebriefProgress();
+  }
+
+  function updateDebriefProgress() {
+    const total = state.selectedMission.objectives.length;
+    const done = state.completed.size;
+    const pct = total > 0 ? (done / total * 100) : 0;
+    document.getElementById('debrief-progress').style.width = pct + '%';
+    document.getElementById('debrief-count').textContent = done;
+    document.getElementById('complete-btn').disabled = done < total;
+  }
+
+  // ══════════════════════════════════════
+  // MISSION COMPLETE
+  // ══════════════════════════════════════
+  function showComplete() {
+    const mission = state.selectedMission;
+    const agentName = state.agentName;
+    const pg = state.selectedPlayground;
+
+    document.getElementById('complete-mission-name').textContent = mission.title;
+
+    const debriefLines = [
+      agentName
+        ? `Objective cleared. Agent <strong>${agentName}</strong>, your cover as a kid on a regular trip to the playground remains intact.`
+        : `Objective cleared. Your cover as a kid on a regular trip to the playground remains intact.`,
+      `<strong>${pg.name}</strong> has been secured. All ${mission.objectives.length} objectives confirmed.`,
+      `This transmission was not logged. Coordinates erased. The mission never happened.`,
+      `HQ is proud of you, Agent. Same time next recess?`
+    ];
+
+    const elapsedMs = state.missionStartTime ? Date.now() - state.missionStartTime : null;
+    recordCompletion(mission.id, elapsedMs);
+    const count = getMissionCompletionCount(mission.id);
+    const countLine = count === 1
+      ? `First time completing this mission. Good start, Agent.`
+      : `You've completed this mission <strong>${count} times</strong>. HQ is impressed.`;
+    debriefLines.push(countLine);
+
+    if (elapsedMs !== null) {
+      debriefLines.push(`Mission time: <strong>${formatDuration(elapsedMs)}</strong>.`);
+    }
+
+    document.getElementById('complete-debrief-msg').innerHTML = debriefLines.join('<br><br>');
+    showScreen('screen-complete');
+  }
+
+  // ══════════════════════════════════════
+  // COMPLETION RECORDS (localStorage)
+  // ══════════════════════════════════════
+
+  function getCompletions() {
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
+    catch { return []; }
+  }
+
+  function recordCompletion(missionId, elapsedMs) {
+    const completions = getCompletions();
+    completions.push({ missionId, completedAt: new Date().toISOString(), elapsedMs: elapsedMs || null });
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(completions));
+  }
+
+  function formatDuration(ms) {
+    const totalSeconds = Math.floor(ms / 1000);
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    if (minutes === 0) return `${seconds}s`;
+    return `${minutes}m ${seconds}s`;
+  }
+
+  function getMissionCompletionCount(missionId) {
+    return getCompletions().filter(c => c.missionId === missionId).length;
+  }
+
+  function getMissionBestTime(missionId) {
+    const times = getCompletions()
+      .filter(c => c.missionId === missionId && typeof c.elapsedMs === 'number')
+      .map(c => c.elapsedMs);
+    return times.length ? Math.min(...times) : null;
+  }
+
+  // ══════════════════════════════════════
+  // UTILITY
+  // ══════════════════════════════════════
+  function restartMission() {
+    state.completed = new Set();
+    renderDebrief();
+  }
+
+  function newMission() {
+    if (state.selectedPlayground) {
+      showMissionSelect();
+    } else {
+      goHome();
+    }
+  }
+</script>
+
+<!-- COUNTDOWN OVERLAY -->
+<div id="countdown-overlay">
+  <div id="countdown-number">3</div>
+  <div id="countdown-label">Get ready, Agent</div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,117 @@
+{
+  "schemaVersion": 1,
+  "playgrounds": [
+    {
+      "id": "base-alpha",
+      "name": "Base Alpha",
+      "location": {
+        "lat": 49.229729,
+        "lng": -123.150557,
+        "matchRadiusMeters": 100
+      },
+      "visual": {
+        "mapSnapshot": "images/base-alpha/map.jpg",
+        "photos": [
+          "images/base-alpha/photo-1.jpg",
+          "images/base-alpha/photo-2.jpg"
+        ],
+        "model3d": null
+      },
+      "equipment": [
+        { "id": "slide-1", "name": "Big slide", "type": "slide" },
+        { "id": "monkeybars-1", "name": "Monkey bars", "type": "monkey_bars" },
+        { "id": "rockwall-1", "name": "Rock climbing wall", "type": "climbing_wall" },
+        { "id": "beam-1", "name": "Balance beam", "type": "balance_beam" },
+        { "id": "swings-1", "name": "Swing set", "type": "swings" }
+      ],
+      "missions": [
+        {
+          "id": "mission-alpha-001",
+          "title": "Operation Sundial",
+          "source": "official",
+          "status": "approved",
+          "objectives": [
+            { "equipmentId": "rockwall-1", "instruction": "Scale the wall to reach the lookout point." },
+            { "equipmentId": "monkeybars-1", "instruction": "Cross the bars without touching the ground." },
+            { "equipmentId": "beam-1", "instruction": "Balance across to the extraction point." },
+            { "equipmentId": "slide-1", "instruction": "Slide down for a clean exit." }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "base-bravo",
+      "name": "Base Bravo",
+      "location": {
+        "lat": 0.0,
+        "lng": 0.0,
+        "matchRadiusMeters": 100
+      },
+      "visual": {
+        "mapSnapshot": "images/base-bravo/map.jpg",
+        "photos": [
+          "images/base-bravo/photo-1.jpg",
+          "images/base-bravo/photo-2.jpg"
+        ],
+        "model3d": null
+      },
+      "equipment": [
+        { "id": "slide-2", "name": "Twisty slide", "type": "slide" },
+        { "id": "climbingdome-1", "name": "Climbing dome", "type": "climbing_dome" },
+        { "id": "seesaw-1", "name": "Seesaw", "type": "seesaw" },
+        { "id": "tunnel-1", "name": "Crawl tunnel", "type": "tunnel" }
+      ],
+      "missions": [
+        {
+          "id": "mission-bravo-001",
+          "title": "Operation Tanglewood",
+          "source": "official",
+          "status": "approved",
+          "objectives": [
+            { "equipmentId": "tunnel-1", "instruction": "Crawl through enemy lines undetected." },
+            { "equipmentId": "climbingdome-1", "instruction": "Climb to the top to scout the area." },
+            { "equipmentId": "seesaw-1", "instruction": "Signal your team with three balanced presses." },
+            { "equipmentId": "slide-2", "instruction": "Make your escape." }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "base-charlie",
+      "name": "Base Charlie",
+      "location": {
+        "lat": 0.0,
+        "lng": 0.0,
+        "matchRadiusMeters": 100
+      },
+      "visual": {
+        "mapSnapshot": "images/base-charlie/map.jpg",
+        "photos": [
+          "images/base-charlie/photo-1.jpg",
+          "images/base-charlie/photo-2.jpg"
+        ],
+        "model3d": null
+      },
+      "equipment": [
+        { "id": "slide-3", "name": "Slide", "type": "slide" },
+        { "id": "monkeybars-2", "name": "Monkey bars", "type": "monkey_bars" },
+        { "id": "springriders-1", "name": "Spring riders", "type": "spring_rider" },
+        { "id": "sandbox-1", "name": "Sandbox", "type": "sandbox" }
+      ],
+      "missions": [
+        {
+          "id": "mission-charlie-001",
+          "title": "Operation Driftwood",
+          "source": "official",
+          "status": "approved",
+          "objectives": [
+            { "equipmentId": "sandbox-1", "instruction": "Dig up the buried intel." },
+            { "equipmentId": "springriders-1", "instruction": "Ride to send a coded signal." },
+            { "equipmentId": "monkeybars-2", "instruction": "Cross the bars to reach the rendezvous." },
+            { "equipmentId": "slide-3", "instruction": "Exit the area before backup arrives." }
+          ]
+        }
+      ]
+    }
+  ]
+}
