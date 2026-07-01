@@ -1122,6 +1122,110 @@
             ]
           }
         ]
+      },
+      {
+        "id": "quilchena-park",
+        "name": "Quilchena Park Playground",
+        "location": { "lat": 49.243922, "lng": -123.148675, "matchRadiusMeters": 100 },
+        "visual": {
+          "mapSnapshot": "images/Quilchena Park Playground/map.jpg",
+          "photos": ["images/Quilchena Park Playground/photo-1.jpg", "images/Quilchena Park Playground/photo-2.jpg"],
+          "model3d": null
+        },
+        "equipment": [
+          { "id": "swings-1", "name": "Swings", "type": "swings" },
+          { "id": "chain-ladder-1", "name": "Chain ladder", "type": "ladder" },
+          { "id": "bridge-1", "name": "Bridge", "type": "bridge" },
+          { "id": "firemans-pole-1", "name": "Fireman's pole", "type": "pole" },
+          { "id": "spiral-ladder-1", "name": "Spiral ladder", "type": "ladder" },
+          { "id": "tunnel-1", "name": "Tunnel", "type": "tunnel" },
+          { "id": "monkey-bars-1", "name": "Monkey bars", "type": "monkey_bars" },
+          { "id": "big-slide-1", "name": "Big slide", "type": "slide" },
+          { "id": "pull-up-bar-1", "name": "Pull up bar", "type": "bars" },
+          { "id": "zipline-1", "name": "Zipline", "type": "zipline" },
+          { "id": "chain-climbing-wall-1", "name": "Chain climbing wall", "type": "climbing_wall" },
+          { "id": "small-slide-1", "name": "Small slide", "type": "slide" },
+          { "id": "small-swings-1", "name": "Small swings", "type": "swings" },
+          { "id": "small-stairs-1", "name": "Small stairs", "type": "stairs" },
+          { "id": "small-green-ladder-1", "name": "Small green ladder", "type": "ladder" },
+          { "id": "animal-puzzle-1", "name": "Animal puzzle", "type": "activity_panel" },
+          { "id": "tic-tac-toe-1", "name": "Tic-tac-toe", "type": "activity_panel" },
+          { "id": "wood-outline-1", "name": "Wood outline", "type": "track" },
+          { "id": "small-wooden-steps-1", "name": "Small wooden steps", "type": "stairs" },
+          { "id": "steering-wheel-1", "name": "Steering wheel", "type": "activity_panel" }
+        ],
+        "missions": [
+          {
+            "id": "mission-quilchena-park-001",
+            "title": "Operation Firewatch",
+            "source": "official",
+            "status": "approved",
+            "startPoint": "The swings",
+            "endPoint": "Back at the swings",
+            "objectives": [
+              { "equipmentId": "small-green-ladder-1", "instruction": "Run to the small green ladder and climb up to the tunnel." },
+              { "equipmentId": "tunnel-1", "instruction": "Go through the tunnel." },
+              { "equipmentId": "bridge-1", "instruction": "Go across the bridge to the fireman's pole." },
+              { "equipmentId": "firemans-pole-1", "instruction": "Go down the fireman's pole." },
+              { "equipmentId": "animal-puzzle-1", "instruction": "Solve the animal puzzle." },
+              { "equipmentId": "small-wooden-steps-1", "instruction": "Climb the small wooden steps." },
+              { "equipmentId": "steering-wheel-1", "instruction": "Turn the steering wheel, then run back to the swings." }
+            ]
+          },
+          {
+            "id": "mission-quilchena-park-002",
+            "title": "Operation Traverse",
+            "source": "official",
+            "status": "approved",
+            "startPoint": "Between the monkey bars and zipline",
+            "endPoint": "Back between the monkey bars and zipline",
+            "objectives": [
+              { "equipmentId": "monkey-bars-1", "instruction": "Take the monkey bars to the small green ladder." },
+              { "equipmentId": "small-green-ladder-1", "instruction": "Climb the small green ladder." },
+              { "equipmentId": "spiral-ladder-1", "instruction": "Go down the spiral ladder." },
+              { "equipmentId": "chain-ladder-1", "instruction": "Run to the chain ladder and climb it." },
+              { "equipmentId": "bridge-1", "instruction": "Run across the bridge to the big slide." },
+              { "equipmentId": "big-slide-1", "instruction": "Go down the big slide." }
+            ]
+          },
+          {
+            "id": "mission-quilchena-park-003",
+            "title": "Operation Codebreaker",
+            "source": "official",
+            "status": "approved",
+            "startPoint": "Bottom of the small green ladder",
+            "endPoint": "Bottom of the small green ladder",
+            "objectives": [
+              { "equipmentId": "small-green-ladder-1", "instruction": "Climb the small green ladder." },
+              { "equipmentId": "tic-tac-toe-1", "instruction": "Turn all the tic-tac-toe squares to X's." },
+              { "equipmentId": "small-slide-1", "instruction": "Go down the small slide." }
+            ]
+          },
+          {
+            "id": "mission-quilchena-park-004",
+            "title": "Operation Helm",
+            "source": "official",
+            "status": "approved",
+            "startPoint": "Bottom of the small wooden steps",
+            "endPoint": "Bottom of the small wooden steps",
+            "objectives": [
+              { "equipmentId": "small-wooden-steps-1", "instruction": "Climb the small wooden steps." },
+              { "equipmentId": "steering-wheel-1", "instruction": "Turn the steering wheel 3 times." },
+              { "equipmentId": "small-slide-1", "instruction": "Go down the small slide." }
+            ]
+          },
+          {
+            "id": "mission-quilchena-park-005",
+            "title": "Operation Boundary",
+            "source": "official",
+            "status": "approved",
+            "startPoint": "The small swing set",
+            "endPoint": "The small swing set",
+            "objectives": [
+              { "equipmentId": "wood-outline-1", "instruction": "Go all the way around the perimeter of the whole playground on the wood outline." }
+            ]
+          }
+        ]
       }
     ]
   };
