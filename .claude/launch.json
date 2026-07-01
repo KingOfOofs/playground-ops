@@ -1,0 +1,12 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "playground-ops",
+      "runtimeExecutable": "C:\\Windows\\System32\\cmd.exe",
+      "runtimeArgs": ["/c", "set PATH=C:\\Users\\hardc\\AppData\\Roaming\\GameMakerStudio2\\unknownUser_unknownUserID\\node\\node;%PATH% && npx --yes serve -l 3456 ."],
+      "cwd": "E:\\Claude Code\\Playground Ops",
+      "port": 3456
+    }
+  ]
+}

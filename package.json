@@ -1,0 +1,12 @@
+{
+  "name": "playground-ops",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "server": "node server.js",
+    "start": "npx serve -l 3456 ."
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.39.0"
+  }
+}
