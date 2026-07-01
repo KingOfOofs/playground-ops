@@ -401,40 +401,6 @@
     .input-field:focus { border-color: var(--green); }
     .input-field::placeholder { color: var(--text-muted); }
 
-    /* ── AI GENERATE MODAL ── */
-    .modal-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.75);
-      z-index: 100;
-      align-items: center;
-      justify-content: center;
-      padding: 24px;
-    }
-    .modal-overlay.active { display: flex; }
-    .modal-box {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 24px;
-      width: 100%;
-      max-width: 440px;
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-    }
-    .modal-title {
-      color: var(--green);
-      font-size: 0.75rem;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-    }
-    .modal-body { font-size: 0.8rem; color: var(--text-dim); line-height: 1.6; }
-    .modal-actions { display: flex; gap: 10px; }
-    .modal-actions .btn { flex: 1; }
-    #ai-key-error { font-size: 0.75rem; color: var(--red); display: none; }
-
     /* ── DIVIDER ── */
     .divider {
       width: 100%;
@@ -686,25 +652,9 @@
       <!-- injected by JS -->
     </div>
 
-    <button class="btn btn-secondary" id="ai-generate-btn" onclick="openAiGenerateModal()">⚡ AI: Generate Mission</button>
     <button class="btn btn-primary" id="confirm-mission-btn" disabled onclick="confirmMissionSelect()">Accept Mission →</button>
   </div>
 </section>
-
-<!-- AI Generate Mission Modal -->
-<div class="modal-overlay" id="ai-modal">
-  <div class="modal-box">
-    <div class="modal-title">// AI Mission Generator</div>
-    <div class="modal-body" id="ai-modal-body">
-      HQ will generate a custom mission using the equipment at this base. This may take a few seconds.
-    </div>
-    <div id="ai-key-error">Mission generation failed. Is the server running?</div>
-    <div class="modal-actions" id="ai-modal-actions">
-      <button class="btn btn-secondary" onclick="closeAiModal()">Cancel</button>
-      <button class="btn btn-primary" onclick="runAiGenerate()">Generate →</button>
-    </div>
-  </div>
-</div>
 
 
 <!-- ══════════════════════════════════════
@@ -1308,90 +1258,6 @@
     if (!state.selectedMission) return;
     renderBriefing();
     showScreen('screen-briefing');
-  }
-
-  // ── AI MISSION GENERATOR ──
-  function openAiGenerateModal() {
-    document.getElementById('ai-key-error').style.display = 'none';
-    document.getElementById('ai-modal-body').textContent =
-      'HQ will generate a custom mission using the equipment at this base. This may take a few seconds.';
-    document.getElementById('ai-modal-actions').style.display = 'flex';
-    document.getElementById('ai-modal').classList.add('active');
-  }
-
-  function closeAiModal() {
-    document.getElementById('ai-modal').classList.remove('active');
-  }
-
-  async function runAiGenerate() {
-    const pg = state.selectedPlayground;
-
-    document.getElementById('ai-modal-body').textContent = '// Contacting HQ... Generating mission...';
-    document.getElementById('ai-key-error').style.display = 'none';
-    document.getElementById('ai-modal-actions').style.display = 'none';
-
-    try {
-      const res = await fetch('http://localhost:3457/api/generate-mission', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ equipment: pg.equipment })
-      });
-
-      if (!res.ok) throw new Error('server error ' + res.status);
-      const mission = await res.json();
-      if (mission.error) throw new Error(mission.error);
-
-      const generatedMission = {
-        id: 'ai-' + Date.now(),
-        title: mission.title || 'AI Mission',
-        source: 'ai',
-        status: 'approved',
-        startPoint: mission.startPoint || '',
-        endPoint: mission.endPoint || '',
-        objectives: (mission.objectives || []).filter(o =>
-          pg.equipment.some(e => e.id === o.equipmentId)
-        )
-      };
-
-      if (generatedMission.objectives.length === 0) throw new Error('No valid objectives');
-
-      closeAiModal();
-      injectAiMissionCard(generatedMission);
-    } catch (e) {
-      document.getElementById('ai-modal-body').textContent =
-        'HQ will generate a custom mission using the equipment at this base. This may take a few seconds.';
-      document.getElementById('ai-key-error').style.display = 'block';
-      document.getElementById('ai-key-error').textContent =
-        e.message.includes('JSON') ? 'Unexpected response. Please try again.' : 'Mission generation failed. Is the server running?';
-      document.getElementById('ai-modal-actions').style.display = 'flex';
-    }
-  }
-
-  function injectAiMissionCard(mission) {
-    const list = document.getElementById('mission-list');
-    // Remove any previous AI-generated card
-    const prev = list.querySelector('[data-ai="true"]');
-    if (prev) prev.remove();
-
-    const card = document.createElement('div');
-    card.className = 'playground-card';
-    card.dataset.id = mission.id;
-    card.dataset.ai = 'true';
-    card.innerHTML = `
-      <div class="card-name">${mission.title}</div>
-      <div class="card-meta">${mission.objectives.length} objectives &nbsp;·&nbsp; <span style="color:var(--amber)">⚡ ai-generated</span></div>
-    `;
-    card.addEventListener('click', () => {
-      document.querySelectorAll('#mission-list .playground-card').forEach(c => c.classList.remove('selected'));
-      card.classList.add('selected');
-      state.selectedMission = mission;
-      document.getElementById('confirm-mission-btn').disabled = false;
-    });
-
-    list.appendChild(card);
-    // Auto-select the generated mission
-    card.click();
-    card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
 
   function loadImageWithFallback(img, src, onFail) {
