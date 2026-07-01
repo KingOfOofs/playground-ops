@@ -1292,14 +1292,10 @@
     showMissionSelect();
   }
 
-  function difficultyTag(difficulty) {
-    const map = {
-      easy:   { label: 'easy',   color: 'var(--green)' },
-      medium: { label: 'medium', color: 'var(--amber)' },
-      hard:   { label: 'hard',   color: 'var(--red)' }
-    };
-    const d = map[difficulty] || { label: difficulty || '?', color: 'var(--text-muted)' };
-    return `<span style="color:${d.color}">${d.label}</span>`;
+  function difficultyTag(objectiveCount) {
+    const difficulty = objectiveCount < 4 ? 'easy' : objectiveCount <= 6 ? 'medium' : 'hard';
+    const color = { easy: 'var(--green)', medium: 'var(--amber)', hard: 'var(--red)' }[difficulty];
+    return `<span style="color:${color}">${difficulty}</span>`;
   }
 
   // ══════════════════════════════════════
@@ -1333,7 +1329,7 @@
         : '';
       card.innerHTML = `
         <div class="card-name">${mission.title}</div>
-        <div class="card-meta">${mission.objectives.length} objectives &nbsp;·&nbsp; ${mission.source} &nbsp;·&nbsp; ${difficultyTag(mission.difficulty)}${completedTag}${bestTag}</div>
+        <div class="card-meta">${mission.objectives.length} objectives &nbsp;·&nbsp; ${mission.source} &nbsp;·&nbsp; ${difficultyTag(mission.objectives.length)}${completedTag}${bestTag}</div>
       `;
       card.addEventListener('click', () => {
         document.querySelectorAll('#mission-list .playground-card').forEach(c => c.classList.remove('selected'));

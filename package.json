@@ -1,0 +1,9 @@
+{
+  "type": "module",
+  "scripts": {
+    "compress": "node compress-images.js"
+  },
+  "dependencies": {
+    "sharp": "^0.32.6"
+  }
+}
