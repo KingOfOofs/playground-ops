@@ -558,8 +558,11 @@
     <input class="input-field" id="agent-name-input" type="text" placeholder="Enter your name..." maxlength="24" autocomplete="off">
 
     <div id="home-token-bar" style="display:none; justify-content:space-between; align-items:center; width:100%;">
-      <span style="font-size:0.8rem; color:var(--amber);">🪙 <span id="home-token-count">0</span> tokens</span>
-      <button class="btn btn-secondary" style="width:auto; padding: 8px 14px; font-size:0.75rem;" onclick="showShop()">🎨 Theme Shop</button>
+      <div style="display:flex; flex-direction:column; gap:2px;">
+        <span style="font-size:0.8rem; color:var(--amber);">🪙 <span id="home-token-count">0</span> tokens</span>
+        <span style="font-size:0.65rem; color:var(--text-muted); letter-spacing:0.1em; text-transform:uppercase;">// <span id="home-title-display">Rookie</span></span>
+      </div>
+      <button class="btn btn-secondary" style="width:auto; padding: 8px 14px; font-size:0.75rem;" onclick="showShop()">🛒 Shop</button>
     </div>
 
     <button class="btn btn-primary" onclick="startLocationDetect()">Let's go →</button>
@@ -792,7 +795,7 @@
 <section class="screen" id="screen-shop">
   <div class="top-bar">
     <button class="back-btn" id="shop-back-btn" onclick="goHome()">← HQ</button>
-    <span class="screen-title">Theme Shop</span>
+    <span class="screen-title">Agent Shop</span>
   </div>
 
   <div class="stack">
@@ -801,7 +804,12 @@
       <p>Spend your tokens to unlock new looks. Your balance: <span style="color:var(--amber)">🪙 <strong id="shop-token-count">0</strong> tokens</span></p>
     </div>
 
-    <div class="section-label">// Available Themes</div>
+    <div class="section-label">// Agent Titles</div>
+    <div class="stack" id="title-list">
+      <!-- injected by JS -->
+    </div>
+
+    <div class="section-label">// Colour Themes</div>
     <div class="stack" id="theme-list">
       <!-- injected by JS -->
     </div>
@@ -818,11 +826,24 @@
   const PLAYER_DATA_KEY = 'playground-ops-players';
 
   const THEMES = [
-    { id: 'default',  name: 'Dark Ops',       cost: 0, color: '#22c55e', vars: { '--green': '#22c55e', '--green-dim': '#16a34a', '--green-glow': 'rgba(34,197,94,0.15)',   '--bg': '#0a0f1a' } },
-    { id: 'blue',     name: 'Midnight Blue',   cost: 2, color: '#3b82f6', vars: { '--green': '#3b82f6', '--green-dim': '#2563eb', '--green-glow': 'rgba(59,130,246,0.15)',  '--bg': '#0a0f1e' } },
-    { id: 'orange',   name: 'Solar Flare',     cost: 3, color: '#f97316', vars: { '--green': '#f97316', '--green-dim': '#ea580c', '--green-glow': 'rgba(249,115,22,0.15)',  '--bg': '#0f0a00' } },
-    { id: 'purple',   name: 'Cosmic',          cost: 4, color: '#a855f7', vars: { '--green': '#a855f7', '--green-dim': '#9333ea', '--green-glow': 'rgba(168,85,247,0.15)',  '--bg': '#0a0014' } },
-    { id: 'pink',     name: 'Neon Pink',       cost: 5, color: '#ec4899', vars: { '--green': '#ec4899', '--green-dim': '#db2777', '--green-glow': 'rgba(236,72,153,0.15)',  '--bg': '#0f000a' } },
+    { id: 'default',  name: 'Dark Ops',       cost:  0, color: '#22c55e', vars: { '--green': '#22c55e', '--green-dim': '#16a34a', '--green-glow': 'rgba(34,197,94,0.15)',   '--bg': '#0a0f1a' } },
+    { id: 'blue',     name: 'Midnight Blue',   cost:  2, color: '#3b82f6', vars: { '--green': '#3b82f6', '--green-dim': '#2563eb', '--green-glow': 'rgba(59,130,246,0.15)',  '--bg': '#0a0f1e' } },
+    { id: 'orange',   name: 'Solar Flare',     cost:  3, color: '#f97316', vars: { '--green': '#f97316', '--green-dim': '#ea580c', '--green-glow': 'rgba(249,115,22,0.15)',  '--bg': '#0f0a00' } },
+    { id: 'crimson',  name: 'Crimson',         cost:  3, color: '#ef4444', vars: { '--green': '#ef4444', '--green-dim': '#dc2626', '--green-glow': 'rgba(239,68,68,0.15)',   '--bg': '#0f0a0a' } },
+    { id: 'purple',   name: 'Cosmic',          cost:  4, color: '#a855f7', vars: { '--green': '#a855f7', '--green-dim': '#9333ea', '--green-glow': 'rgba(168,85,247,0.15)',  '--bg': '#0a0014' } },
+    { id: 'teal',     name: 'Teal Ops',        cost:  4, color: '#14b8a6', vars: { '--green': '#14b8a6', '--green-dim': '#0d9488', '--green-glow': 'rgba(20,184,166,0.15)',  '--bg': '#00100f' } },
+    { id: 'pink',     name: 'Neon Pink',       cost:  5, color: '#ec4899', vars: { '--green': '#ec4899', '--green-dim': '#db2777', '--green-glow': 'rgba(236,72,153,0.15)',  '--bg': '#0f000a' } },
+    { id: 'gold',     name: 'Gold Rush',       cost:  6, color: '#eab308', vars: { '--green': '#eab308', '--green-dim': '#ca8a04', '--green-glow': 'rgba(234,179,8,0.15)',   '--bg': '#0f0d00' } },
+    { id: 'arctic',   name: 'Arctic',          cost:  8, color: '#e2e8f0', vars: { '--green': '#e2e8f0', '--green-dim': '#cbd5e1', '--green-glow': 'rgba(226,232,240,0.15)', '--bg': '#060810' } },
+  ];
+
+  const TITLES = [
+    { id: 'rookie',      name: 'Rookie',           cost:  0 },
+    { id: 'field-agent', name: 'Field Agent',       cost:  3 },
+    { id: 'shadow',      name: 'Shadow',            cost:  6 },
+    { id: 'ghost',       name: 'Ghost',             cost: 10 },
+    { id: 'phantom',     name: 'Phantom',           cost: 15 },
+    { id: 'commander',   name: 'Commander',         cost: 25 },
   ];
 
   const CATALOG = {
@@ -1223,6 +1244,137 @@
             "endPoint": "The small swing set",
             "objectives": [
               { "equipmentId": "wood-outline-1", "instruction": "Go all the way around the perimeter of the whole playground on the wood outline." }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "ecole-des-colibris",
+        "name": "École des Colibris Playground",
+        "location": { "lat": 49.210890, "lng": -123.119926, "matchRadiusMeters": 100 },
+        "visual": {
+          "mapSnapshot": "images/École des Colibris Playground/map.jpg",
+          "photos": ["images/École des Colibris Playground/photo-1.jpg"],
+          "model3d": null
+        },
+        "equipment": [
+          { "id": "small-slide-1",        "name": "Small slide",        "type": "slide" },
+          { "id": "big-slide-1",          "name": "Big slide",          "type": "slide" },
+          { "id": "spinning-bowl-1",      "name": "Spinning bowl",      "type": "spinning" },
+          { "id": "stairs-1",             "name": "Stairs",             "type": "stairs" },
+          { "id": "monkey-bars-1",        "name": "Monkey bars",        "type": "monkey_bars" },
+          { "id": "step-bridge-1",        "name": "Step bridge",        "type": "bridge" },
+          { "id": "firemans-pole-1",      "name": "Fireman's pole",     "type": "pole" },
+          { "id": "hump-ladder-1",        "name": "Hump ladder",        "type": "ladder" },
+          { "id": "rock-climbing-wall-1", "name": "Rock climbing wall", "type": "climbing_wall" },
+          { "id": "stepping-stones-1",    "name": "Stepping stones",    "type": "balance" },
+          { "id": "s-bend-ladder-1",      "name": "S bend ladder",      "type": "ladder" },
+          { "id": "spinning-platform-1",  "name": "Spinning platform",  "type": "spinning" },
+          { "id": "wooden-outline-1",     "name": "Wooden outline",     "type": "track" }
+        ],
+        "missions": [
+          {
+            "id": "mission-colibris-001",
+            "title": "Operation Ridgeback",
+            "source": "official",
+            "status": "approved",
+            "startPoint": "Outside end of the monkey bars",
+            "endPoint": "Bottom of the big slide",
+            "objectives": [
+              { "equipmentId": "monkey-bars-1",     "instruction": "Take the monkey bars to the step bridge." },
+              { "equipmentId": "step-bridge-1",     "instruction": "Take the step bridge to the stepping stones." },
+              { "equipmentId": "stepping-stones-1", "instruction": "Take the stepping stones to the hump ladder." },
+              { "equipmentId": "hump-ladder-1",     "instruction": "Take the hump ladder up to the big slide." },
+              { "equipmentId": "big-slide-1",       "instruction": "Go down the big slide." }
+            ]
+          },
+          {
+            "id": "mission-colibris-002",
+            "title": "Operation Perimeter",
+            "source": "official",
+            "status": "approved",
+            "startPoint": "Outside end of the monkey bars",
+            "endPoint": "Outside end of the monkey bars",
+            "objectives": [
+              { "equipmentId": "wooden-outline-1", "instruction": "Balance on the wooden outline all the way around the playground." }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "ash-park",
+        "name": "Ash Park Playground",
+        "location": { "lat": 49.210271, "lng": -123.119397, "matchRadiusMeters": 100 },
+        "visual": {
+          "mapSnapshot": "images/Ash Park Playground/map.jpg",
+          "photos": ["images/Ash Park Playground/photo-1.jpg"],
+          "model3d": null
+        },
+        "equipment": [
+          { "id": "swings-1",                    "name": "Swings",                        "type": "swings" },
+          { "id": "orange-slide-1",              "name": "Orange slide",                  "type": "slide" },
+          { "id": "green-parallel-bars-1",       "name": "Green parallel bars",           "type": "bars" },
+          { "id": "green-kiddy-slide-1",         "name": "Green kiddy slide",             "type": "slide" },
+          { "id": "fabric-steps-1",              "name": "Fabric steps",                  "type": "stairs" },
+          { "id": "hammock-steps-1",             "name": "Hammock steps",                 "type": "stairs" },
+          { "id": "fabric-bridge-1",             "name": "Fabric bridge",                 "type": "bridge" },
+          { "id": "green-monkey-bars-1",         "name": "Green monkey bars",             "type": "monkey_bars" },
+          { "id": "shape-rock-wall-1",           "name": "Shape rock wall",               "type": "climbing_wall" },
+          { "id": "green-orange-climbing-wall-1","name": "Green and orange climbing wall", "type": "climbing_wall" },
+          { "id": "hexagon-climbing-wall-1",     "name": "Hexagon climbing wall",         "type": "climbing_wall" },
+          { "id": "black-white-hexagon-wall-1",  "name": "Black and white hexagon wall",  "type": "climbing_wall" },
+          { "id": "hanging-pendulums-1",         "name": "Hanging pendulums",             "type": "pendulums" },
+          { "id": "suspended-platform-1",        "name": "Suspended platform",            "type": "platform" },
+          { "id": "orange-white-climbing-wall-1","name": "Orange and white climbing wall", "type": "climbing_wall" },
+          { "id": "fabric-balance-beam-1",       "name": "Fabric balance beam",           "type": "balance_beam" },
+          { "id": "ladder-1",                    "name": "Ladder",                        "type": "ladder" }
+        ],
+        "missions": [
+          {
+            "id": "mission-ash-park-001",
+            "title": "Operation Ascent",
+            "source": "official",
+            "status": "approved",
+            "startPoint": "Bottom of the green and orange climbing wall",
+            "endPoint": "Ground below the orange and white climbing wall",
+            "objectives": [
+              { "equipmentId": "green-orange-climbing-wall-1", "instruction": "Climb the green and orange climbing wall." },
+              { "equipmentId": "suspended-platform-1",         "instruction": "Climb up to the suspended platform." },
+              { "equipmentId": "fabric-steps-1",               "instruction": "Take the fabric steps down." },
+              { "equipmentId": "fabric-bridge-1",              "instruction": "Take the fabric bridge to the highest bubble." },
+              { "equipmentId": "ladder-1",                     "instruction": "Climb down the ladder to the orange and white climbing wall." },
+              { "equipmentId": "orange-white-climbing-wall-1", "instruction": "Take the orange and white climbing wall to the ground." }
+            ]
+          },
+          {
+            "id": "mission-ash-park-002",
+            "title": "Operation Bubble",
+            "source": "official",
+            "status": "approved",
+            "startPoint": "Under the orange slide",
+            "endPoint": "Ground by the green parallel bars",
+            "objectives": [
+              { "equipmentId": "hexagon-climbing-wall-1",  "instruction": "Climb the hexagons to the hanging pendulums." },
+              { "equipmentId": "hanging-pendulums-1",      "instruction": "Climb across the hanging pendulums, then up the fabric bridge to the lowest bubble." },
+              { "equipmentId": "suspended-platform-1",     "instruction": "Climb up to the suspended platform in the middle bubble." },
+              { "equipmentId": "green-parallel-bars-1",    "instruction": "Take the green parallel bars to the ground." }
+            ]
+          },
+          {
+            "id": "mission-ash-park-003",
+            "title": "Operation Honeycomb",
+            "source": "official",
+            "status": "approved",
+            "startPoint": "Bottom of the yellow and white hexagon climbing wall",
+            "endPoint": "Ground by the green parallel bars",
+            "objectives": [
+              { "equipmentId": "hexagon-climbing-wall-1",      "instruction": "Climb the hexagons into the bubble." },
+              { "equipmentId": "fabric-bridge-1",              "instruction": "Go down the fabric bridge." },
+              { "equipmentId": "fabric-steps-1",               "instruction": "Go across the hanging fabric steps to the white and black hexagons." },
+              { "equipmentId": "black-white-hexagon-wall-1",   "instruction": "Go across the white and black hexagons." },
+              { "equipmentId": "fabric-balance-beam-1",        "instruction": "Go up the fabric bridge, then left to the fabric balance beam." },
+              { "equipmentId": "suspended-platform-1",         "instruction": "Go across the fabric balance beam, then up into the lowest bubble from the bottom, and climb to the suspended platform." },
+              { "equipmentId": "green-parallel-bars-1",        "instruction": "Take the green parallel bars to the ground." }
             ]
           }
         ]
@@ -1714,8 +1866,9 @@
   function getPlayerData() {
     try {
       const all = JSON.parse(localStorage.getItem(PLAYER_DATA_KEY)) || {};
-      return all[playerKey()] || { tokens: 0, unlockedThemes: ['default'], activeTheme: 'default' };
-    } catch { return { tokens: 0, unlockedThemes: ['default'], activeTheme: 'default' }; }
+      const defaults = { tokens: 0, unlockedThemes: ['default'], activeTheme: 'default', unlockedTitles: ['rookie'], activeTitle: 'rookie' };
+      return Object.assign({}, defaults, all[playerKey()]);
+    } catch { return { tokens: 0, unlockedThemes: ['default'], activeTheme: 'default', unlockedTitles: ['rookie'], activeTitle: 'rookie' }; }
   }
 
   function savePlayerData(data) {
@@ -1751,8 +1904,64 @@
     document.getElementById('shop-token-count').textContent = data.tokens;
     document.getElementById('shop-back-btn').onclick =
       () => document.getElementById('screen-complete').classList.contains('active') ? showScreen('screen-complete') : goHome();
+    renderTitleList(data);
     renderThemeList(data);
     showScreen('screen-shop');
+  }
+
+  function renderTitleList(data) {
+    const list = document.getElementById('title-list');
+    list.innerHTML = '';
+    TITLES.forEach(title => {
+      const unlocked = data.unlockedTitles.includes(title.id);
+      const active = data.activeTitle === title.id;
+      const canAfford = data.tokens >= title.cost;
+
+      let actionHTML;
+      if (active) {
+        actionHTML = `<button class="theme-pill pill-equipped" disabled>Equipped</button>`;
+      } else if (unlocked) {
+        actionHTML = `<button class="theme-pill pill-equip" onclick="equipTitle('${title.id}')">Equip</button>`;
+      } else if (canAfford) {
+        actionHTML = `<button class="theme-pill pill-buy" onclick="buyTitle('${title.id}')">Buy · 🪙${title.cost}</button>`;
+      } else {
+        actionHTML = `<button class="theme-pill pill-locked" disabled>🪙${title.cost}</button>`;
+      }
+
+      const card = document.createElement('div');
+      card.className = 'theme-card' + (active ? ' active-theme' : '');
+      card.innerHTML = `
+        <div class="theme-swatch" style="background:var(--green); box-shadow:0 0 10px var(--green-glow); font-size:0.6rem; display:flex; align-items:center; justify-content:center; color:#0a0f1a; font-weight:bold; letter-spacing:0.05em;">${title.name.toUpperCase()}</div>
+        <div class="theme-card-body">
+          <div class="theme-card-name">${title.name}</div>
+          <div class="theme-card-meta">${title.cost === 0 ? 'Free' : `${title.cost} tokens`}${unlocked && !active ? ' · Unlocked' : ''}</div>
+        </div>
+        <div class="theme-card-action">${actionHTML}</div>
+      `;
+      list.appendChild(card);
+    });
+  }
+
+  function equipTitle(titleId) {
+    const data = getPlayerData();
+    data.activeTitle = titleId;
+    savePlayerData(data);
+    renderTitleList(data);
+    updateHomeTokenBar();
+  }
+
+  function buyTitle(titleId) {
+    const data = getPlayerData();
+    const title = TITLES.find(t => t.id === titleId);
+    if (!title || data.tokens < title.cost) return;
+    data.tokens -= title.cost;
+    if (!data.unlockedTitles.includes(titleId)) data.unlockedTitles.push(titleId);
+    data.activeTitle = titleId;
+    savePlayerData(data);
+    renderTitleList(data);
+    renderThemeList(data);
+    document.getElementById('shop-token-count').textContent = data.tokens;
+    updateHomeTokenBar();
   }
 
   function renderThemeList(data) {
@@ -1820,6 +2029,8 @@
     const data = getPlayerData();
     state.agentName = savedName;
     document.getElementById('home-token-count').textContent = data.tokens;
+    const title = TITLES.find(t => t.id === data.activeTitle) || TITLES[0];
+    document.getElementById('home-title-display').textContent = title.name;
     bar.style.display = 'flex';
   }
 
